@@ -1,0 +1,27 @@
+{
+  "name": "mofron-comp-gridlist",
+  "version": "0.0.1",
+  "description": "grid list component for mofron",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+      "mofron-layout-grid" : "",
+      "mofron-layout-hrzcenter" : "",
+      "mofron-event-click'" : ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simpart/mofron-comp-gridlist.git"
+  },
+  "keywords": [
+    "front-end"
+  ],
+  "author": "simparts",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/simpart/mofron-comp-gridlist/issues"
+  },
+  "homepage": "https://github.com/simpart/mofron-comp-gridlist#readme"
+}
