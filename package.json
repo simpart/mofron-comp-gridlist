@@ -1,6 +1,6 @@
 {
   "name": "mofron-comp-gridlist",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "grid list component for mofron",
   "main": "index.js",
   "scripts": {
@@ -8,8 +8,7 @@
   },
   "dependencies": {
       "mofron-layout-grid" : "",
-      "mofron-layout-hrzcenter" : "",
-      "mofron-event-click'" : ""
+      "mofron-layout-hrzcenter" : ""
   },
   "repository": {
     "type": "git",
