@@ -1,22 +1,13 @@
 /**
- * @file   mofron-comp-gridmenu/index.js
- * @author simpart
+ * @file GridList.js
+ * @brief grid list component for mofron
  */
 let mf = require('mofron');
-/* component */
 let Menu = require('mofron-comp-menu');
 /* layout */
 let Grid = require('mofron-layout-grid');
-let HrzCent = require('mofron-layout-hrzcenter');
-/* event */
-let Click = require('mofron-event-click');
 
-/**
- * @class mofron.comp.GridMenu
- * @brief gridmenu component for mofron
- */
 mf.comp.GridList = class extends Menu {
-    
     constructor (po) {
         try {
             super();
@@ -28,36 +19,69 @@ mf.comp.GridList = class extends Menu {
         }
     }
     
-    /**
-     * initialize vdom
-     * 
-     * @param prm : (string) text contents
-     */
     initDomConts (prm) {
         try {
             super.initDomConts();
-            this.addLayout(this.grid());
-            
+            this.addLayout(new Grid());
         } catch (e) {
             console.error(e.stack);
             throw e;
         }
     }
     
-    grid (val) {
+    column (prm) {
         try {
-            if (undefined === val) {
+            let grid = this.getConfig('layout', 'Grid');
+            if (undefined === prm) {
                 /* getter */
-                if (undefined === this.m_grid) {
-                    this.grid(new Grid([25,25,25,25]));
-                }
-                return this.m_grid;
+                return (null === grid.value())? null : grid.value().length;
             }
             /* setter */
-            if (true !== mf.func.isObject(val, 'Grid')) {
+            if ( ('number' !== typeof prm) && (1 > prm) ) {
                 throw new Error('invalid parameter');
             }
-            this.m_grid = val;
+            this.confLeftColumn(prm);
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    right (prm) {
+        try {
+            if (undefined === prm) {
+                /* getter */
+                return (undefined === this.m_right) ? null : this.m_right;
+            }
+            /* setter */
+            if ('number' !== typeof prm) {
+                throw new Error('invalid parameter');
+            }
+            this.m_right = prm;
+            this.confLeftColumn();
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    confLeftColumn (col) {
+        try {
+            let set_col = [];
+            let grid    = this.getConfig('layout', 'Grid');
+            let off     = 0;
+            if ((null !== this.column()) && (null !== this.right())) {
+                for (let i=0;i < this.column();i++) {
+                    set_col.push(((100 - (this.right() * this.column())) / this.column())-0.1);
+                    set_col.push(this.right());
+                }
+                grid.value(set_col);
+            } else if (null !== col) {
+                for (let i=0;i < col;i++) {
+                    set_col.push((100/col));
+                }
+                grid.value(set_col);
+            }
         } catch (e) {
             console.error(e.stack);
             throw e;
@@ -66,18 +90,15 @@ mf.comp.GridList = class extends Menu {
     
     addChild (chd, idx) {
         try {
-            let wrap = new mf.Component({
-                addLayout : new HrzCent({
-                                rate : 80
-                            }),
-                addChild : chd
-            });
-            super.addChild(wrap, idx);
-            /* replace click event */
-            let clk = wrap.getConfig('event', 'Click');
-            if (null !== clk) {
-                clk.ignore(true);
-                chd.addEvent(new Click(clk.getOption));
+            super.addChild(
+                new mf.Component({
+                    addChild : chd
+                }),
+                idx
+            );
+            if (null !== this.right()) {
+                /* for right padding */
+                super.addChild(new mf.Component(), undefined, false);
             }
         } catch (e) {
             console.error(e.stack);
@@ -85,5 +106,18 @@ mf.comp.GridList = class extends Menu {
         }
     }
     
+    selectIdx (idx, evt) {
+        try {
+            let ret = super.selectIdx(idx, evt);
+            if (('number' === typeof ret) && (null !== this.right())) {
+                ret = ret / 2;
+            }
+            return ret;
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
 }
 module.exports = mofron.comp.GridList;
+/* end of file */
