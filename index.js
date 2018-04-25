@@ -90,6 +90,7 @@ mf.comp.GridList = class extends Menu {
     
     addChild (chd, idx) {
         try {
+            chd.width('100%');
             super.addChild(
                 new mf.Component({
                     addChild : chd
