@@ -4,6 +4,7 @@
  */
 let mf = require('mofron');
 let Menu = require('mofron-comp-menu');
+let Click = require('mofron-event-click');
 /* layout */
 let Grid = require('mofron-layout-grid');
 
@@ -107,6 +108,29 @@ mf.comp.GridList = class extends Menu {
         }
     }
     
+    child (prm, flg) {
+        try {
+            if (undefined === prm) {
+                /* getter */
+                /* workaround */
+                let chd = super.child();
+                if (true === this.isSelEvent()) {
+                    let ret = new Array();
+                    for (let cidx in chd) {
+                        ret.push(chd[cidx].child()[0]);
+                    }
+                    return ret;
+                } else {
+                    return chd;
+                }
+            }
+            super.child(prm);
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
     selectIdx (idx, evt) {
         try {
             let ret = super.selectIdx(idx, evt);
@@ -114,6 +138,53 @@ mf.comp.GridList = class extends Menu {
                 ret = ret / 2;
             }
             return ret;
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    isSelEvent (prm) {
+        try {
+            if (undefined === prm) {
+                return (undefined === this.m_selevtctl) ? false : this.m_selevtctl;
+            }
+            if ('boolean' !== typeof prm) {
+                throw new Error('invalid parameter');
+            }
+            this.m_selevtctl = prm;
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    getClickEvent () {
+        try {
+            return new Click(
+                (tgt, prm) => {
+                    try {
+                        let chd = prm.child();
+                        for (var idx in chd) {
+                            if (chd[idx].getId() === tgt.getId()) {
+                                prm.selectIdx(parseInt(idx), true);
+                                break;
+                            }
+                        }
+                        /* exec callback */
+                        let sel_evt = prm.selectEvent();
+                        if (null !== sel_evt) {
+                            prm.isSelEvent(true);
+                            sel_evt[0](prm.selectIdx(), prm, sel_evt[1]);
+                            prm.isSelEvent(false);
+                        }
+                    } catch (e) {
+                        console.error(e.stack);
+                        throw e;
+                    }
+                },
+                this
+            );
         } catch (e) {
             console.error(e.stack);
             throw e;
