@@ -2,13 +2,13 @@
  * @file GridList.js
  * @brief grid list component for mofron
  */
-let mf = require('mofron');
-let Menu = require('mofron-comp-menu');
-let Click = require('mofron-event-click');
-/* layout */
-let Grid = require('mofron-layout-grid');
+const mf     = require('mofron');
+const Menu   = require('mofron-comp-menu');
+const Click  = require('mofron-event-click');
+const Grid   = require('mofron-layout-grid');
+const Hrzcnt = require('mofron-layout-hrzcenter');
 
-mf.comp.GridList = class extends Menu {
+mf.comp.GridList = class extends mf.Component {
     constructor (po) {
         try {
             super();
@@ -23,7 +23,107 @@ mf.comp.GridList = class extends Menu {
     initDomConts (prm) {
         try {
             super.initDomConts();
-            this.addLayout(new Grid());
+            this.addLayout(this.grid());
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    rate (prm) {
+        try {
+            if (undefined === prm) {
+                /* getter */
+                if (undefined === this.m_rate) {
+                    this.rate(90);
+                }
+                return this.m_rate;
+            }
+            /* setter */
+            if ('number' !== typeof prm) {
+                throw new Error('invalid parameter');
+            }
+            this.m_rate = prm;
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    addChild(chd, idx) {
+        try {
+            let clk = (p1, p2) => {
+                try {
+                    let chd = p2.child();
+                    for (let cidx in chd) {
+                        if (p1.getId() === chd[cidx].child()[0].getId()) {
+                            p2.execSelect(parseInt(cidx));
+                        }
+                    }
+                } catch (e) {
+                    console.error(e.stack);
+                    throw e;
+                }
+            }
+            chd.execOption({ event : [ new Click(new mf.Param(clk, this)) ] });
+            let wrap = new mf.Component({
+                child  : [ chd ],
+                layout : (0 !== this.rate()) ? [ new Hrzcnt(this.rate()) ] : undefined
+            });
+            super.addChild(wrap, idx);
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    selectIndex (idx) {
+        try {
+            if (undefined === idx) {
+                /* getter */
+                return (undefined === this.m_selidx) ? null : this.m_selidx;
+            }
+            /* setter */
+            if (('number' !== typeof idx) || (undefined === this.child()[idx])) {
+                throw new Error('invalid parameter : ' + idx);
+            }
+            this.child()[idx].eventTgt().getRawDom.click();
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+
+    selectEvent (evt, prm) {
+        try {
+            if (undefined === evt) {
+                /* getter */
+                return (undefined === this.m_selevt) ? [] : this.m_selevt;
+            }
+            /* setter */
+            if ('function' !== (typeof evt)) {
+                throw new Error('invalid parameter');
+            }
+            if (undefined === this.m_selevt) {
+                this.m_selevt = [];
+            }
+            this.m_selevt.push([evt, prm]);
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+
+    execSelect (idx) {
+        try {
+            if (('number' !== typeof idx) || (undefined === this.child()[idx])) {
+                throw new Error('invalid parameter : ' + idx);
+            }
+            this.m_selidx = idx;
+            let evt = this.selectEvent();
+            for (let eidx in evt) {
+                evt[eidx][0](idx, evt[eidx][1], this);
+            }
         } catch (e) {
             console.error(e.stack);
             throw e;
@@ -32,164 +132,44 @@ mf.comp.GridList = class extends Menu {
     
     column (prm) {
         try {
-            let grid = this.getConfig('layout', 'Grid');
             if (undefined === prm) {
                 /* getter */
-                return (null === grid.value())? null : grid.value().length;
+                return this.grid().rate().length();
             }
             /* setter */
-            if ( ('number' !== typeof prm) && (1 > prm) ) {
+            if (('number' !== typeof prm) || (0 === prm) || (100 < prm)) {
                 throw new Error('invalid parameter');
             }
-            this.confLeftColumn(prm);
+            let rate = [];
+            for (let idx=0; idx < prm ;idx++) {
+                rate.push(100/prm);
+            }
+            this.grid().rate(rate);
         } catch (e) {
             console.error(e.stack);
             throw e;
         }
     }
     
-    right (prm) {
+    grid (prm) {
         try {
             if (undefined === prm) {
                 /* getter */
-                return (undefined === this.m_right) ? null : this.m_right;
+                if (undefined === this.m_grid) {
+                    this.grid(new Grid());
+                }
+                return this.m_grid;
             }
             /* setter */
-            if ('number' !== typeof prm) {
+            if (true !== mf.func.isInclude(prm, 'Grid')) {
                 throw new Error('invalid parameter');
             }
-            this.m_right = prm;
-            this.confLeftColumn();
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    confLeftColumn (col) {
-        try {
-            let set_col = [];
-            let grid    = this.getConfig('layout', 'Grid');
-            let off     = 0;
-            if ((null !== this.column()) && (null !== this.right())) {
-                for (let i=0;i < this.column();i++) {
-                    set_col.push(((100 - (this.right() * this.column())) / this.column())-0.1);
-                    set_col.push(this.right());
-                }
-                grid.value(set_col);
-            } else if (null !== col) {
-                for (let i=0;i < col;i++) {
-                    set_col.push((100/col));
-                }
-                grid.value(set_col);
-            }
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    addChild (chd, idx) {
-        try {
-            chd.width('100%');
-            super.addChild(
-                new mf.Component({
-                    addChild : chd
-                }),
-                idx
-            );
-            if (null !== this.right()) {
-                /* for right padding */
-                super.addChild(new mf.Component(), undefined, false);
-            }
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    child (prm, flg) {
-        try {
-            if (undefined === prm) {
-                /* getter */
-                /* workaround */
-                let chd = super.child();
-                if (true === this.isSelEvent()) {
-                    let ret = new Array();
-                    for (let cidx in chd) {
-                        ret.push(chd[cidx].child()[0]);
-                    }
-                    return ret;
-                } else {
-                    return chd;
-                }
-            }
-            super.child(prm);
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    selectIdx (idx, evt) {
-        try {
-            let ret = super.selectIdx(idx, evt);
-            if (('number' === typeof ret) && (null !== this.right())) {
-                ret = ret / 2;
-            }
-            return ret;
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    isSelEvent (prm) {
-        try {
-            if (undefined === prm) {
-                return (undefined === this.m_selevtctl) ? false : this.m_selevtctl;
-            }
-            if ('boolean' !== typeof prm) {
-                throw new Error('invalid parameter');
-            }
-            this.m_selevtctl = prm;
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    getClickEvent () {
-        try {
-            return new Click(
-                (tgt, prm) => {
-                    try {
-                        let chd = prm.child();
-                        for (var idx in chd) {
-                            if (chd[idx].getId() === tgt.getId()) {
-                                prm.selectIdx(parseInt(idx), true);
-                                break;
-                            }
-                        }
-                        /* exec callback */
-                        let sel_evt = prm.selectEvent();
-                        if (null !== sel_evt) {
-                            prm.isSelEvent(true);
-                            sel_evt[0](prm.selectIdx(), prm, sel_evt[1]);
-                            prm.isSelEvent(false);
-                        }
-                    } catch (e) {
-                        console.error(e.stack);
-                        throw e;
-                    }
-                },
-                this
-            );
+            this.m_grid = prm;
         } catch (e) {
             console.error(e.stack);
             throw e;
         }
     }
 }
-module.exports = mofron.comp.GridList;
+module.exports = mf.comp.GridList;
 /* end of file */
